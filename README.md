@@ -1,11 +1,12 @@
 # astrbot_plugin_Merge_WeMSG
 
-AstrBot的微信合并消息处理插件，支持gewechat平台收到的合并转发消息处理。
+AstrBot的微信个人号消息处理插件，支持gewechat平台收到的合并转发消息和链接分享处理。
 
 ## 功能
 
 - 自动处理微信的合并消息(聊天记录)
 - 解析合并消息中的文本消息
+- 当接收到微信分享的链接时，插件会提取出原始URL并直接发送给LLM
 
 - 将解析后的消息以格式化的方式传递给大语言模型(LLM)进行处理
 - 支持高优先级处理，确保消息在gewechat适配器处理前被拦截
@@ -22,7 +23,11 @@ git clone https://github.com/YourUsername/astrbot_plugin_Merge_WeMSG
 
 ## 使用方法
 
-插件会自动处理所有gewechat平台接收到的合并消息，无需任何命令。当接收到微信合并消息时，插件会自动解析并转换为以下格式发送给LLM：
+插件会自动处理所有gewechat平台接收到的合并消息和链接分享，无需任何命令。
+
+### 合并消息处理
+
+当接收到微信合并消息时，插件会自动解析并转换为以下格式发送给LLM：
 
 ```
 合并消息：<聊天标题>
@@ -33,19 +38,38 @@ git clone https://github.com/YourUsername/astrbot_plugin_Merge_WeMSG
 ...
 ```
 
+### 链接分享处理
+
+当接收到微信分享的链接时，插件会提取出原始URL并直接发送给LLM，不包含额外说明文字：
+
+```
+https://example.com/some-article
+```
+
+特点：
+- 自动处理HTML转义字符（如 `&amp;` 转为 `&`）
+- 仅提取URL，不包含标题、描述等额外信息
+- 适用于所有微信分享的链接，包括公众号文章、网页等
+
 ## 技术细节
 
 - 插件优先级设置为-999999，确保在gewechat适配器处理消息前进行拦截
-- 使用XML解析处理微信合并消息的复杂结构
+- 使用XML解析处理微信复杂的消息结构
 - 支持多种消息类型的识别和处理
 - 自动将处理后的消息发送给LLM进行后续处理
+- 链接处理时自动清理URL中的HTML转义字符
+
+## 支持的消息类型
+
+- 合并转发的聊天记录（MsgType=49, type=19）
+- 分享的链接（MsgType=49, type=5）
 
 ## 注意事项
 
 - 目前仅支持gewechat平台
 - 需要AstrBot v1.0.0或更高版本
-- 仅处理微信合并转发的聊天记录消息（MsgType=49）
 - 插件会自动处理消息的优先级，确保消息被正确处理
+- 处理多行文本时会进行Unicode编码，确保与飞书等API兼容
 
 ## 日志输出
 
@@ -54,6 +78,7 @@ git clone https://github.com/YourUsername/astrbot_plugin_Merge_WeMSG
 - 消息处理过程
 - 消息类型识别
 - XML解析状态
+- 提取的链接URL
 - 错误和异常信息
 
 ## 作者
